@@ -9,9 +9,12 @@ require('./features/tokenCleanup/tokenCleanup');
 const Routes = require("./routes/routes");
 const cors = require('cors');
 
+let corsOptions = {
+  origin: "http://localhost:3000",
 
+};
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cors());
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
