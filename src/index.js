@@ -11,7 +11,9 @@ const cors = require('cors');
 
 // Mengatur opsi CORS
 let corsOptions = {
-  origin: "http://localhost:3000",
+  origin: ["http://localhost:3000", 
+  "https://boostify-fe.vercel.app",
+    ]
 };
 
 // Menggunakan middleware CORS
