@@ -14,7 +14,6 @@ const allowedOrigins = [
   "http://localhost:3000",
 ];
 
-app.use(express.json());
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -24,6 +23,8 @@ app.use(cors({
     }
   },
 }));
+
+app.use(express.json());
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
