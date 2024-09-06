@@ -9,21 +9,8 @@ require('./features/tokenCleanup/tokenCleanup');
 const Routes = require("./routes/routes");
 const cors = require('cors');
 
-const allowedOrigins = [
-  "https://boostify-fe.vercel.app",
-  "http://localhost:3000",
-];
-
 app.use(express.json());
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-}));
+app.use(cors());
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
