@@ -7,6 +7,8 @@ const prisma = new PrismaClient();
 require('./features/tokenCleanup/tokenCleanup');
 
 const Routes = require("./routes/routes");
+
+app.use(express.json());
 const cors = require('cors');
 
 const allowedOrigins = [
@@ -14,7 +16,6 @@ const allowedOrigins = [
   "http://localhost:3000",
 ];
 
-app.use(express.json());
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
