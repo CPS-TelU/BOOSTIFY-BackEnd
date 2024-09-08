@@ -4,7 +4,7 @@ require('dotenv').config();
 const PORT = process.env.PORT || 4000;
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-require('./features/tokenCleanup/tokenCleanup');
+// require('./features/tokenCleanup/tokenCleanup');
 
 const Routes = require("./routes/routes");
 const cors = require('cors');
