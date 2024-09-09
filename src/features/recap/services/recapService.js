@@ -1,13 +1,12 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// Fungsi untuk mendapatkan rangkuman kehadiran
 const getAttendanceRecap = async (page = 1, limit = 5, untilDate) => {
     const topLimit = 3;
-    const skip = (page - 1) * limit;
+    let skip = (page - 1) * limit;
+
     const dateFilter = untilDate ? new Date(`${untilDate}T23:59:59.999Z`) : undefined;
 
-    // Mengambil data kehadiran teratas (page 1)
     const topAttendances = page === 1 ? await prisma.attendance.groupBy({
         by: ['name'],
         _count: {
@@ -23,7 +22,12 @@ const getAttendanceRecap = async (page = 1, limit = 5, untilDate) => {
 
     const topNames = topAttendances.map(item => item.name);
 
-    // Mengambil kehadiran lain setelah kehadiran teratas
+    if (page === 1) {
+        skip = 0;
+    } else {
+        skip += topLimit;
+    }
+
     const otherAttendances = await prisma.attendance.groupBy({
         by: ['name'],
         _count: {
@@ -36,44 +40,47 @@ const getAttendanceRecap = async (page = 1, limit = 5, untilDate) => {
         },
         where: {
             name: {
-                notIn: topNames, // Jangan ambil nama yang ada di top 3
+                notIn: topNames,
             },
         },
-        skip: page === 1 ? 0 : skip - topLimit,
+        skip,
         take: limit,
     });
 
-    // Gabungkan hasil kehadiran teratas dan kehadiran lainnya
     const allAttendances = [...topAttendances, ...otherAttendances];
 
-    // Dapatkan detail kehadiran (termasuk `assisstant_code` dan `time`)
-    const attendances = await prisma.attendance.findMany({
-        where: {
-            name: {
-                in: allAttendances.map(item => item.name),
-            },
-            time: dateFilter ? { lte: dateFilter } : undefined,
-        },
-        select: {
-            name: true,
-            assisstant_code: true,
-            time: true,
-        },
-        orderBy: {
-            time: 'desc', // Ambil kehadiran terbaru
-        },
-        distinct: ['name'], // Hanya ambil satu entry per name
-    });
+    const attendances = await Promise.all(
+        allAttendances.map(async (item) => {
+            const assistant = await prisma.attendance.findFirst({
+                where: { 
+                    name: item.name, 
+                    time: dateFilter ? { lte: dateFilter } : undefined 
+                },
+                select: {
+                    assisstant_code: true,
+                    time: true,
+                },
+                orderBy: {
+                    time: 'desc',
+                },
+            });
 
-    // Gabungkan data kehadiran dengan total kehadiran untuk setiap nama
-    const finalAttendances = attendances.map(att => ({
-        name: att.name,
-        assisstant_code: att.assisstant_code,
-        lastAttendance: att.time,
-        totalAttendance: allAttendances.find(a => a.name === att.name)._count.name,
-    }));
+            if (!assistant) {
+                console.log(`No attendance found for ${item.name} before ${dateFilter}`);
+                return null;
+            }
 
-    // Hitung total nama di dalam tabel attendance
+            return {
+                name: item.name,
+                assisstant_code: assistant.assisstant_code,
+                lastAttendance: assistant.time,
+                totalAttendance: item._count.name,
+            };
+        })
+    );
+
+    const filteredAttendances = attendances.filter(item => item !== null);
+
     const totalNames = await prisma.attendance.groupBy({
         by: ['name'],
         _count: {
@@ -84,9 +91,8 @@ const getAttendanceRecap = async (page = 1, limit = 5, untilDate) => {
         },
     });
 
-    // Kembalikan hasil yang sudah difilter
     return {
-        attendances: finalAttendances,
+        attendances: filteredAttendances,
         total: totalNames.length,
         currentPage: page,
         totalPages: Math.ceil((totalNames.length - topLimit) / limit) + 1,
