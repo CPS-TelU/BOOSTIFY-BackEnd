@@ -1,13 +1,12 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const getAttendanceRecap = async (page = 1, limit = 5, untilDate) => {
+const getAttendanceRecap = async (page = 1, limit = 5) => {
     const topLimit = 3;
     let skip = (page - 1) * limit;
 
-    const dateFilter = untilDate ? new Date(`${untilDate}T23:59:59.999Z`) : undefined;
-
-    const topAttendances = page === 1 ? await prisma.attendance.groupBy({
+    // Ambil data user yang memiliki kehadiran terbanyak
+    const topAttendances = await prisma.attendance.groupBy({
         by: ['name'],
         _count: {
             name: true,
@@ -17,83 +16,49 @@ const getAttendanceRecap = async (page = 1, limit = 5, untilDate) => {
                 name: 'desc',
             },
         },
-        take: topLimit,
-    }) : [];
-
-    const topNames = topAttendances.map(item => item.name);
-
-    if (page === 1) {
-        skip = 0;
-    } else {
-        skip += topLimit;
-    }
-
-    const otherAttendances = await prisma.attendance.groupBy({
-        by: ['name'],
-        _count: {
-            name: true,
-        },
-        orderBy: {
-            _count: {
-                name: 'desc',
-            },
-        },
-        where: {
-            name: {
-                notIn: topNames,
-            },
-        },
-        skip,
-        take: limit,
+        take: topLimit + limit,  // Ambil top 3 + sisanya berdasarkan paginasi
+        skip: page === 1 ? 0 : topLimit + skip, // Skip data sesuai dengan page
     });
 
-    const allAttendances = [...topAttendances, ...otherAttendances];
+    // Ambil semua nama yang telah diproses
+    const names = topAttendances.map(item => item.name);
 
-    const attendances = await Promise.all(
-        allAttendances.map(async (item) => {
-            const assistant = await prisma.attendance.findFirst({
-                where: { 
-                    name: item.name, 
-                    time: dateFilter ? { lte: dateFilter } : undefined 
-                },
-                select: {
-                    assisstant_code: true,
-                    time: true,
-                },
-                orderBy: {
-                    time: 'desc',
-                },
-            });
+    // Ambil data kehadiran terakhir untuk setiap nama
+    const attendanceDetails = await prisma.attendance.findMany({
+        where: {
+            name: { in: names },
+        },
+        distinct: ['name'], // Ambil satu data terbaru untuk setiap nama
+        orderBy: { time: 'desc' },
+        select: {
+            name: true,
+            assisstant_code: true,
+            time: true,
+        },
+    });
 
-            if (!assistant) {
-                console.log(`No attendance found for ${item.name} before ${dateFilter}`);
-                return null;
-            }
+    // Gabungkan data kehadiran berdasarkan nama
+    const attendances = topAttendances.map(item => {
+        const detail = attendanceDetails.find(detail => detail.name === item.name);
+        return {
+            name: item.name,
+            assisstant_code: detail ? detail.assisstant_code : null,
+            lastAttendance: detail ? detail.time : null,
+            totalAttendance: item._count.name,
+        };
+    });
 
-            return {
-                name: item.name,
-                assisstant_code: assistant.assisstant_code,
-                lastAttendance: assistant.time,
-                totalAttendance: item._count.name,
-            };
-        })
-    );
-
-    const filteredAttendances = attendances.filter(item => item !== null);
-
+    // Hitung total semua user yang pernah hadir
     const totalNames = await prisma.attendance.groupBy({
         by: ['name'],
         _count: {
             name: true,
         },
-        where: {
-            time: dateFilter ? { lte: dateFilter } : undefined,
-        },
     });
 
     return {
-        attendances: filteredAttendances,
-        total: totalNames.length,
+        attendances,
+        total: totalNames.length, // Total semua user
         currentPage: page,
         totalPages: Math.ceil((totalNames.length - topLimit) / limit) + 1,
     };
