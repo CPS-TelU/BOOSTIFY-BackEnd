@@ -56,12 +56,26 @@ const getAttendanceRecap = async (page = 1, limit = 5) => {
         },
     });
 
-    return {
+    const result = {
         attendances,
         total: totalNames.length, // Total semua user
         currentPage: page,
         totalPages: Math.ceil((totalNames.length - topLimit) / limit) + 1,
     };
+
+    // Kirim data ke semua client melalui WebSocket jika ws tersedia
+    if (ws) {
+        ws.clients.forEach((client) => {
+            if (client.readyState === ws.OPEN) {
+                client.send(JSON.stringify({
+                    type: 'attendance_recap',
+                    data: result,
+                }));
+            }
+        });
+    }
+
+    return result;
 };
 
 module.exports = {

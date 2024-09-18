@@ -31,7 +31,8 @@
     "mysql2": "^3.11.0",
     "node-cron": "^3.0.3",
     "redis": "^4.7.0",
-    "vercel": "^37.1.0"
+    "vercel": "^37.1.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4",

@@ -2,8 +2,17 @@ const { getAttendanceRecap } = require('../services/recapService');
 
 const getAttendanceRecapController = async (req, res) => {
     try {
-        const { page = 1, limit = 5, untilDate } = req.query;
-        const recapData = await getAttendanceRecap(Number(page), Number(limit), untilDate);
+        const { page = 1, limit = 5} = req.query;
+        const recapData = await getAttendanceRecap(Number(page), Number(limit));
+        
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({
+                    type: 'attendance_recap',
+                    data: recapData,
+                }));
+            }
+        });
 
         res.status(200).json({
             success: true,

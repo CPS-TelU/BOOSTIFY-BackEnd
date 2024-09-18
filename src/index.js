@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const WebSocket = require('ws');
+const http = require('http');
 require('dotenv').config();
 const PORT = process.env.PORT || 4000;
 const { PrismaClient } = require('@prisma/client');
@@ -9,30 +11,25 @@ const prisma = new PrismaClient();
 const Routes = require("./routes/routes");
 const cors = require('cors');
 
-const allowedOrigins = [
-  "https://boostify-fe.vercel.app",
-  "http://localhost:3000",
-];
-
 app.use(express.json());
 
-// CORS middleware configuration
+let corsOptions = {
+  origin: ["http://localhost:3000", 
+  "https://boostify-fe.vercel.app",
+    ]
+};
+app.use(cors(corsOptions));
 
-app.use(cors())
-// app.use(cors({
-//   origin: function (origin, callback) {
-//     // Allow requests with no origin (like mobile apps, curl requests)
-//     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-//       callback(null, true);
-//     } else {
-//       console.error(`CORS error: Origin ${origin} not allowed by CORS`);
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-//   credentials: true,
-//   allowedHeaders: ['Authorization', 'Content-Type'],
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-// }));
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (ws) => {
+  console.log('New client connected');
+
+  ws.on('close', () => {
+    console.log('Client disconnected');
+  });
+});
 
 // Test route to verify server is running
 app.get('/', (req, res) => {
