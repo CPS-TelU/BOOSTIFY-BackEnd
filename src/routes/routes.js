@@ -9,16 +9,18 @@ const attendanceController = require('../features/live_attendance/controller/att
 const personalRecordsController = require('../features/personalrecords/controller/personalrecController');
 const accessValidation = require('../middlewares/authMiddleware');
 const userController = require('../features/whoami/controller/whoamiController');
-const upImageController = require('../features/uploadImage/controller/uploadImageController')
-const deleteUserImage = require('../features/uploadImage/controller/deleteImageController')
-const uploadAttendanceData = require('../features/recap/controller/sendDataController')
+const upImageController = require('../features/uploadImage/controller/uploadImageController');
+const deleteUserImage = require('../features/uploadImage/controller/deleteImageController');
+const uploadAttendanceData = require('../features/recap/controller/sendDataController');
+const changePass = require('../features/auth/controller/changePassController')
 
 router.get("/recap", accessValidation ,recapController)
 router.get('/attendances', accessValidation, attendanceController);
 router.get('/personalrec', accessValidation, personalRecordsController);
 router.get('/whoami', accessValidation, userController);
 
-router.patch('/uploadImage', accessValidation, upImageController)
+router.patch('/uploadImage', accessValidation, upImageController);
+router.patch('/auth/updatePassword', accessValidation, changePass);
 router.delete('/deleteImage', accessValidation, deleteUserImage);
 
 router.post("/uploadfromml", uploadAttendanceData);

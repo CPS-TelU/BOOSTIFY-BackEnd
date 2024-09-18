@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();   
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 // require('./features/tokenCleanup/tokenCleanup');
