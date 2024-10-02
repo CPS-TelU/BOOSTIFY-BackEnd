@@ -37,7 +37,7 @@ const patchUserPassword = async (req, res) => {
 
         // Respond with success message
         res.json({ message: 'Password updated successfully.' });
-    }    catch (error) {
+    }   catch (error) {
         console.error('Error processing request:', error);
 
         // Handle specific case where the current password is incorrect

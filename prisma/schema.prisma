@@ -15,11 +15,13 @@ model Attendance {
 }
 
 model Assisstant {
-  id              Int     @id @default(autoincrement())
-  assisstant_code String  @unique @db.VarChar(3)
-  name            String  @unique @db.VarChar(255)
-  imageUrl        String? @default("") @db.VarChar
-  password        String  @db.VarChar(255)
+  id                Int     @id @default(autoincrement())
+  assisstant_code   String  @unique @db.VarChar(3)
+  name              String  @unique @db.VarChar(255)
+  imageUrl          String? @default("") @db.VarChar
+  password          String  @db.VarChar(255)
+  email             String?
+  verification_code String?
 }
 
 model BlacklistedToken {
