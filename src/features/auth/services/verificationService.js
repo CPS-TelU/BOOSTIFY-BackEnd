@@ -35,12 +35,27 @@ const sendVerificationCode = async (assisstant_code, email) => {
         });
 
         const mailOptions = {
-            from: 'your-email@gmail.com',
+            from: 'boostifycps@gmail.com',
             to: email,
             subject: 'Password Change Verification Code',
-            text: `Your verification code is: ${verificationCode}`,
-        };
-
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; max-width: 600px; margin: auto;">
+                    <div style="text-align: center;">
+                        <img src="https://ik.imagekit.io/mitchel/Boostifylogo.png?updatedAt=1727863972552" alt="Boostify Logo" style="width: 150px; margin-bottom: 20px;">
+                    </div>
+                    <h2 style="color: #333;">Password Change Verification</h2>
+                    <p>Dear valued customer,</p>
+                    <p>We received a request to change the password for your Boostify account. Please use the following verification code to proceed with the password change:</p>
+                    <div style="font-size: 24px; font-weight: bold; padding: 10px 0; color: #333;">${verificationCode}</div>
+                    <p>If you did not request this, please ignore this email or contact our support team immediately.</p>
+                    <p>Thank you for choosing Boostify!</p>
+                    <p style="margin-top: 20px;">Best regards,<br>Boostify Support Team</p>
+                    <hr style="margin-top: 40px; border: none; border-top: 1px solid #e0e0e0;">
+                    <p style="font-size: 12px; color: #666;">If you have any questions, please feel free to contact us at <a href="mailto:boostifycps@gmail.com" style="color: #0073e6;">boostifycps@gmail.com</a> or visit our website at <a href="https://boostify-fe.vercel.app/" style="color: #0073e6;">https://boostify-fe.vercel.app/</a></p>
+                </div>
+            `,
+        };        
+        
         await transporter.sendMail(mailOptions);
 
         // Step 5: Store the code in the database
