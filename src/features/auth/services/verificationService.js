@@ -44,7 +44,7 @@ const sendVerificationCode = async (assisstant_code, email) => {
                         <img src="https://ik.imagekit.io/mitchel/Boostifylogo.png?updatedAt=1727863972552" alt="Boostify Logo" style="width: 150px; margin-bottom: 20px;">
                     </div>
                     <h2 style="color: #333;">Password Change Verification</h2>
-                    <p>Dear valued customer,</p>
+                    <p>Dear valued user,</p>
                     <p>We received a request to change the password for your Boostify account. Please use the following verification code to proceed with the password change:</p>
                     <div style="font-size: 24px; font-weight: bold; padding: 10px 0; color: #333;">${verificationCode}</div>
                     <p>If you did not request this, please ignore this email or contact our support team immediately.</p>
